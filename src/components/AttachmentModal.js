@@ -1,11 +1,13 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {View, Animated, Keyboard} from 'react-native';
+import {withOnyx} from 'react-native-onyx';
 import Str from 'expensify-common/lib/str';
 import lodashGet from 'lodash/get';
 import lodashExtend from 'lodash/extend';
 import _ from 'underscore';
 import CONST from '../CONST';
+import ONYXKEYS from '../ONYXKEYS';
 import Modal from './Modal';
 import AttachmentView from './AttachmentView';
 import styles from '../styles/styles';
@@ -53,6 +55,12 @@ const propTypes = {
     /** Title shown in the header of the modal */
     headerTitle: PropTypes.string,
 
+    /** Details about any modals being used */
+    modal: PropTypes.shape({
+        /** Indicates when the modal is completely visible */
+        isVisible: PropTypes.bool,
+    }),
+
     ...withLocalizePropTypes,
 
     ...windowDimensionsPropTypes,
@@ -65,6 +73,7 @@ const defaultProps = {
     isAuthTokenRequired: false,
     allowDownload: false,
     headerTitle: null,
+    modal: {},
     onModalHide: () => {},
 };
 
@@ -253,7 +262,7 @@ class AttachmentModal extends PureComponent {
                         onCloseButtonPress={() => this.setState({isModalOpen: false})}
                     />
                     <View style={styles.imageModalImageCenterContainer}>
-                        {this.state.source && (
+                        {this.state.source && this.props.modal.isVisible && (
                             <AttachmentView
                                 source={source}
                                 isAuthTokenRequired={this.props.isAuthTokenRequired}
@@ -308,5 +317,10 @@ AttachmentModal.propTypes = propTypes;
 AttachmentModal.defaultProps = defaultProps;
 export default compose(
     withWindowDimensions,
+    withOnyx({
+        modal: {
+            key: ONYXKEYS.MODAL,
+        },
+    }),
     withLocalize,
 )(AttachmentModal);
